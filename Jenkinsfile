@@ -32,13 +32,13 @@ pipeline {
        
         stage('Test'){
             steps {
-                sh 'mvn test' // for unit test running
+                sh 'mvn -s settings.xml test' // for unit test running
             }
         }
 
         stage('Checkstyle Analysis'){
             steps {
-                sh 'mvn checkstyle:checkstyle' // suggests changes if any about code issues, best practices or vulnerability etc
+                sh 'mvn -s settings.xml checkstyle:checkstyle' // suggests changes if any about code issues, best practices or vulnerability etc
             }
         }
     }
