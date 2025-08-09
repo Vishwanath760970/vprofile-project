@@ -70,6 +70,26 @@ pipeline {
                 }
             }
         }
+         stage("UploadArtifact"){
+            steps{
+                nexusArtifactUploader(//plugin information
+                  nexusVersion: 'nexus3',
+                  protocol: 'http',
+                  nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                  groupId: 'QA',
+                  version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}", //jenkins build in variables which give us BUILD_ID and BUILD_TIMESTAMP
+                  repository: "${RELEASE_REPO}",
+                  credentialsId: "${NEXUS_LOGIN}",
+                  artifacts: [
+                    [artifactId: 'vproapp',
+                     classifier: '',
+                     file: 'target/vprofile-v2.war',
+                     type: 'war']
+                  ]
+                )
+            }
+        }
+
 
 
     }
