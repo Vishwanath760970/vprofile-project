@@ -21,6 +21,9 @@ pipeline {
         NEXUS_LOGIN = 'nexuslogin'
         SONARSERVER='sonarserver'
         SONARSCANNER='sonarscanner'
+        registryCredential='ecr:us-east-1:awscreds'
+        appRegistry='926413416529.dkr.ecr.us-east-1.amazonaws.com/vprofileappimg'
+        vprofileRegistry='https://926413416529.dkr.ecr.us-east-1.amazonaws.com'
     }
 
     stages {
@@ -93,13 +96,29 @@ pipeline {
                 )
             }
         }
-    }
-    post {
-        always {
-            echo 'Slack Notifications.'
-            slackSend channel: '#jenkins-cicd',
-                color: COLOR_MAP[currentBuild.currentResult],
-                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+
+        stage("Build App image"){
+            steps {
+                script{
+                    dockerImage = docker.build(appRegistry + ":$Build_Number","./Docker-files/app/multistage/") 
+                    //above line builds the docker image by accessing the Dockerfile from given path in 2nd arg
+                    //docker.build is the docker plugin we added in jenkins, its function which accepts 2 args here and build image
+                    //and storing it inside dockerImage variable
+                }
+            }
         }
+
+         stage('Upload App Image') {
+          steps{
+            script {
+              docker.withRegistry( vprofileRegistry, registryCredential ) {
+                dockerImage.push("$BUILD_NUMBER")
+                dockerImage.push('latest')
+              }
+            }
+          }
+        }
+
     }
+    
 }
